@@ -75,18 +75,39 @@ class ListFish:
     def __init__(self, list_fish: list[Fish]):
         self.list_fish: list[Fish] = list_fish
 
+    def __add__(self, other):
+        if isinstance(other, ListFish):
+            return ListFish(self.list_fish + other.list_fish)
+        elif isinstance(other, Fish):
+            return ListFish(self.list_fish + [other])
+        else:
+            raise ArithmeticError('Правый операнд должен быть либо ListFish, либо Fish')
+
+    def __iadd__(self, other):
+        if isinstance(other, ListFish):
+            self.list_fish += other
+            return self
+        elif isinstance(other, Fish):
+            self.list_fish.append(other)
+            return self
+        else:
+            raise ArithmeticError('Правый операнд должен быть либо ListFish, либо Fish')
+
+    def sort(self, reverse: bool = False):
+        self.list_fish.sort(key=lambda fish: fish.mass, reverse=reverse)
+
+    def pop(self) -> Fish:
+        return self.list_fish.pop()
+
     def get_biomass(self) -> float:
         """
         Метод для расчета биомассы списка рыб.
         :return: Биомасса списка рыб
         """
-
         biomass: float = 0.0
-
         for fish in self.list_fish:
-            biomass += fish.mass / 1000
-
-        return biomass
+            biomass += fish.mass
+        return biomass / 1000.0
 
     def get_number_fish(self) -> int:
         """
