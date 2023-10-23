@@ -89,6 +89,11 @@ class ListFish:
             raise ArithmeticError('Правый операнд должен быть либо ListFish, либо Fish')
 
     def __iadd__(self, other):
+        """
+        Метод для операнда self += other (Fish | ListFish)
+        :param other: Правый операнд
+        :return: Результат итерации.
+        """
         if isinstance(other, ListFish):
             self.list_fish += other
             return self
