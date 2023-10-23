@@ -76,6 +76,11 @@ class ListFish:
         self.list_fish: list[Fish] = list_fish
 
     def __add__(self, other):
+        """
+        Метод для операнда self + other (Fish | ListFish)
+        :param other: Правый операнд
+        :return: Результат сложения двух списков.
+        """
         if isinstance(other, ListFish):
             return ListFish(self.list_fish + other.list_fish)
         elif isinstance(other, Fish):
