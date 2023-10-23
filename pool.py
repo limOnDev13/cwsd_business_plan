@@ -26,7 +26,7 @@ class Pool:
         length: int = self.fishes.get_number_fish()
 
         # Если введенное число больше количества рыбы в бассейне, то удалим всю рыбу
-        if number_fish > self.fishes.get_number_fish():
+        if number_fish > length:
             amount = length
         else:
             amount = number_fish
