@@ -109,6 +109,24 @@ class ListFish:
     def pop(self) -> Fish:
         return self.list_fish.pop()
 
+    def daily_growth(self) -> dict[str, float]:
+        """
+        Метод, производящий ежедневный рост всех рыб из списка.
+        :return: Словарь с приростом биомассы и массой не обходимого корма для списка рыб. Словарь имеет вид
+        {'mass_increase': mass_increase,
+                'required_feed': required_feed}
+        """
+        mass_increase: float = 0.0
+        required_feed: float = 0.0
+
+        for fish in self.list_fish:
+            daily_result: dict[str, float] = fish.daily_growth()
+            mass_increase += daily_result['mass_increase']
+            required_feed += daily_result['required_feed']
+
+        return {'mass_increase': mass_increase,
+                'required_feed': required_feed}
+
     def get_biomass(self) -> float:
         """
         Метод для расчета биомассы списка рыб.
