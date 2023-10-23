@@ -95,7 +95,7 @@ class ListFish:
         :return: Результат итерации.
         """
         if isinstance(other, ListFish):
-            self.list_fish += other
+            self.list_fish += other.list_fish
             return self
         elif isinstance(other, Fish):
             self.list_fish.append(other)
