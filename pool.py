@@ -35,3 +35,18 @@ class Pool:
             removed_fish.append(self.fishes.pop())
 
         return ListFish(removed_fish)
+
+    def daily_growth(self) -> dict[str, float | bool]:
+        """
+        Метод, производящий разовое дневное выращивание рыбы в данном бассейне.
+        :return: Словарь с информацией о затраченном корме, приросте биомассы и превышении плотности посадки.
+        """
+        daily_result: dict[str, float] = self.fishes.daily_growth()
+
+        density: float = self.fishes.get_biomass() / self.square
+        overflow: bool = False
+        if density >= self.max_density:
+            overflow = True
+
+        daily_result['overflow'] = overflow
+        return daily_result
