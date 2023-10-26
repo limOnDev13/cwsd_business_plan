@@ -2,11 +2,12 @@ from fish import Fish, ListFish
 
 
 class Pool:
-    def __init__(self, square: float, max_density: float):
+    def __init__(self, square: float, max_density: float, mass_index: int = 0):
         self.square: float = square
         self.max_density: float = max_density
 
         self.fishes: ListFish = ListFish([])
+        self.mass_index: int = mass_index
 
     def add_fish(self, new_fish: Fish | ListFish):
         self.fishes += new_fish
@@ -81,3 +82,10 @@ class Pool:
         :return: количество рыбы в бассейне.
         """
         return self.fishes.get_number_fish()
+
+    def get_average_mass(self) -> float:
+        """
+        Метод для получения средней массы в бассейне.
+        :return: Средняя масса рыбы в бассейне.
+        """
+        return self.fishes.get_mass(average=True)
