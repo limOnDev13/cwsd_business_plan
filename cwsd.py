@@ -12,6 +12,27 @@ class CWSD:
         self.commercial_fish_mass: float = commercial_fish_mass
         self.package: int = package
 
+    def _update_mass_indexes(self):
+        """
+        Метод для обновления значений массовых индексов. Массовый индекс показывает порядковый номер бассейна в
+         зависимости от средней массы рыбы в данном бассейне.
+        :return: Ничего.
+        """
+        # Создадим список средних масс в бассейнах
+        average_masses: list[float] = list()
+
+        for pool in self.pools:
+            average_masses.append(pool.get_average_mass())
+
+        # Отсортируем список средних масс по возрастанию, и, в зависимости от порядкового номера средней массы,
+        # определим массовые индексы
+        average_masses.sort()
+        for index in range(self.number_pools):
+            for pool in self.pools:
+                if average_masses[index] == pool.get_average_mass():
+                    pool.mass_index = index
+                    break
+
     def add_fish(self, new_fish: ListFish) -> bool:
         """
         Метод для добавления новой рыбы в ПУСТОЙ бассейн.
