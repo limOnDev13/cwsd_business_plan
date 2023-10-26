@@ -163,6 +163,20 @@ class ListFish:
                 mass += fish.mass
             return mass / len(self.list_fish)
 
+    def get_number_of_grown_fish(self, min_mass: float) -> int:
+        """
+        Метод для получения количества рыбы, чей вес превысил min_mass
+        :param min_mass: минимальное значение массы рыбы.
+        :return: Количество выросшей рыбы
+        """
+        number_grown_fish: int = 0
+
+        for fish in self.list_fish:
+            if fish.mass >= min_mass:
+                number_grown_fish += 1
+
+        return number_grown_fish
+
 
 def create_list_fish(number_fish: int, mass: float) -> ListFish:
     fishes: list[Fish] = [Fish(mass) for _ in range(number_fish)]
