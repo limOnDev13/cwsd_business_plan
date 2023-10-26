@@ -5,9 +5,10 @@ from pool import Pool
 class CWSD:
     def __init__(self, number_pools: int, square: float, max_density: float, commercial_fish_mass: float, package: int):
         self.number_pools: int = number_pools
+        self.max_density: float = max_density
         self.pools: list[Pool] = []
         for _ in range(number_pools):
-            self.pools.append(Pool(square=square, max_density=max_density))
+            self.pools.append(Pool(square=square))
 
         self.commercial_fish_mass: float = commercial_fish_mass
         self.package: int = package
@@ -53,10 +54,10 @@ class CWSD:
 
         return fish_were_added
 
-    def sell_fish(self) -> ListFish:
+    def sell_fish(self) -> float:
         """
         Метод для продажи товарной рыбы пакетами.
-        :return: Список проданных рыб.
+        :return: Биомасса проданной рыбы.
         """
         sold_fish: ListFish = ListFish([])
 
@@ -70,7 +71,7 @@ class CWSD:
         # Обновим массовые индексы
         self._update_mass_indexes()
 
-        return sold_fish
+        return sold_fish.get_biomass()
 
     def _find_pool_with_mass_index(self, mass_index: int) -> Pool:
         """
@@ -126,5 +127,43 @@ class CWSD:
             biomass_in_previous_pool: float = slow_growing_fish.get_biomass()
             previous_pool.add_fish(slow_growing_fish)
 
+        # Обновим массовые индексы
+        self._update_mass_indexes()
         # Вернем словарь с информацией о перемещениях
         return {next_pool: biomass_in_next_pool, previous_pool: biomass_in_previous_pool}
+
+    def daily_growth(self) -> dict[str, float] | None:
+        """
+        Метод для разового однодневного выращивания рыбы во всем УЗВ.
+        :return: Словарь с информацией о приросте биомассы, затраченном корме и массе проданной рыбы. Если плотность
+         посадки во всем УЗВ достигла предела, то это означает, что зарыбление было ошибочным, и вернем None.
+        """
+        daily_cwsd_result: dict[str, float] = {'mass_increase': 0.0, 'required_feed': 0.0, 'sold_biomass': 0.0}
+
+        # Проведем ежедневное выращивание рыбы в каждом бассейне
+        for pool in self.pools:
+            daily_pool_result: dict[str, float] = pool.daily_growth()
+            daily_cwsd_result['mass_increase'] += daily_pool_result['mass_increase']
+            daily_cwsd_result['required_feed'] += daily_pool_result['required_feed']
+
+        # Если есть достаточно товарной рыбы - продадим ее
+        daily_cwsd_result['sold_biomass'] = self.sell_fish()
+
+        # Если плотность посадки во всех не пустых бассейнах достигла предела, то это ошибка и вернем None
+        total_biomass: float = 0.0
+        total_square: float = 0.0
+        for pool in self.pools:
+            if not pool.is_empty():
+                total_biomass += pool.get_biomass()
+                total_square += pool.square
+        if total_biomass / total_square >= self.max_density:
+            return None
+
+        # Если в каком-нибудь бассейне превышена плотность посадки, то распределим рыбу
+        for pool in self.pools:
+            if pool.get_density() > self.max_density:
+                self.separate_fish(pool)
+
+        # Обновим массовые индексы и вернем словарь с результатами
+        self._update_mass_indexes()
+        return daily_cwsd_result
