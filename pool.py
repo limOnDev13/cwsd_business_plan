@@ -60,3 +60,24 @@ class Pool:
         if self.fishes.get_number_fish() == 0:
             return True
         return False
+
+    def get_biomass(self) -> float:
+        """
+        Метод для получения биомассы в бассейне.
+        :return: биомасса.
+        """
+        return self.fishes.get_biomass()
+
+    def get_density(self) -> float:
+        """
+        Метод для получения плотности посадки.
+        :return: плотность посадки.
+        """
+        return self.fishes.get_biomass() / self.square
+
+    def get_number_fish(self) -> int:
+        """
+        Метод для получения количества рыбы в бассейне.
+        :return: количество рыбы в бассейне.
+        """
+        return self.fishes.get_number_fish()
