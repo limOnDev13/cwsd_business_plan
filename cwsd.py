@@ -68,5 +68,63 @@ class CWSD:
                 sold_fish += pool.remove_fish(number_fish=number_commercial_fish)
 
         # Обновим массовые индексы
+        self._update_mass_indexes()
 
         return sold_fish
+
+    def _find_pool_with_mass_index(self, mass_index: int) -> Pool:
+        """
+        Метод для поиска бассейна с данным массовым индексом.
+        :param mass_index: Массовый индекс искомого бассейна.
+        :return: Искомый бассейн.
+        """
+        for pool in self.pools:
+            if pool.mass_index == mass_index:
+                return pool
+
+    def separate_fish(self, pool: Pool) -> dict[Pool, float]:
+        """
+        Метод для разделения рыб в бассейне, в котором плотность посадки достигла предела, по соседним
+         (по массовым индексам) бассейнам. Рыба не будет перемещаться в ПУСТЫЕ бассейны. Рыба будет перемещаться
+          пакетами.
+        :return: Словарь с информацией о перемещениий рыбы. Словарь будет иметь два значения - в какой бассейн
+         переместилась быстрорастущая рыба, а в какой - медленнорастущая. В качестве ключа будет бассейн,
+          в качестве значения - перемещенная биомасса. Словарь имеет вид:
+           {next_pool: biomass_in_next_pool, previous_pool: biomass_in_previous_pool}
+        """
+        # Найдем соседние по массовым индексам бассейны. Они не должны быть пустыми.
+        next_pool: Pool | None = None
+        previous_pool: Pool | None = None
+        current_mass_index: int = pool.mass_index
+        next_mass_index: int = current_mass_index + 1
+        previous_mass_index: int = current_mass_index - 1
+        biomass_in_next_pool: float = 0.0
+        biomass_in_previous_pool: float = 0.0
+
+        # Ищем следующий бассейн. Все пустые бассейны будут иметь наименьший массовый индекс,
+        # поэтому следующий бассейн (если текущий не крайний) не может быть пустым.
+        if next_mass_index < self.number_pools:
+            next_pool = self._find_pool_with_mass_index(next_mass_index)
+
+        # Ищем предыдущий бассейн. Предыдущий может оказаться пустым, при этом все бассейны с меньшими массовыми
+        # индексами также будут пустыми. Поэтому, если предыдущий бассейн окажется пустым, то искать далее
+        # не имеет смысла.
+        if previous_mass_index >= 0:
+            previous_pool = self._find_pool_with_mass_index(previous_mass_index)
+            if previous_pool.is_empty():
+                previous_pool = None
+
+        # В следующий бассейн (если таковой имеется) переместим быстрорастущую рыбу
+        if next_pool is not None:
+            fast_growing_fish: ListFish = pool.remove_fish(number_fish=self.package)
+            biomass_in_next_pool: float = fast_growing_fish.get_biomass()
+            next_pool.add_fish(fast_growing_fish)
+
+        # В предыдущий бассейн (если таковой имеется) переместим медленнорастущую рыбу
+        if previous_pool is not None:
+            slow_growing_fish: ListFish = pool.remove_fish(number_fish=self.package)
+            biomass_in_previous_pool: float = slow_growing_fish.get_biomass()
+            previous_pool.add_fish(slow_growing_fish)
+
+        # Вернем словарь с информацией о перемещениях
+        return {next_pool: biomass_in_next_pool, previous_pool: biomass_in_previous_pool}
