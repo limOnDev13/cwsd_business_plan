@@ -48,6 +48,9 @@ class CWSD:
                 fish_were_added = True
                 break
 
+        # Обновим массовые индексы
+        self._update_mass_indexes()
+
         return fish_were_added
 
     def sell_fish(self) -> ListFish:
@@ -63,5 +66,7 @@ class CWSD:
             number_commercial_fish: int = pool.fishes.get_number_of_grown_fish(min_mass=self.commercial_fish_mass)
             if number_commercial_fish >= self.package:
                 sold_fish += pool.remove_fish(number_fish=number_commercial_fish)
+
+        # Обновим массовые индексы
 
         return sold_fish
