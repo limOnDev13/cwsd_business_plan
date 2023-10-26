@@ -51,3 +51,12 @@ class Pool:
 
         daily_result['overflow'] = overflow
         return daily_result
+
+    def is_empty(self) -> bool:
+        """
+        Метод, который определяет, является бассейн пустым.
+        :return: True, если бассейн пуст.
+        """
+        if self.fishes.get_number_fish() == 0:
+            return True
+        return False
