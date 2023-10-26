@@ -28,3 +28,19 @@ class CWSD:
                 break
 
         return fish_were_added
+
+    def sell_fish(self) -> ListFish:
+        """
+        Метод для продажи товарной рыбы пакетами.
+        :return: Список проданных рыб.
+        """
+        sold_fish: ListFish = ListFish([])
+
+        # Пройдемся по каждому бассейну и посчитаем количество товарной рыбы.
+        # В каждом бассейне такое количество должно быть не меньше размера пакета.
+        for pool in self.pools:
+            number_commercial_fish: int = pool.fishes.get_number_of_grown_fish(min_mass=self.commercial_fish_mass)
+            if number_commercial_fish >= self.package:
+                sold_fish += pool.remove_fish(number_fish=number_commercial_fish)
+
+        return sold_fish
