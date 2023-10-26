@@ -6,7 +6,7 @@ class Pool:
         self.square: float = square
         self.max_density: float = max_density
 
-        self.fishes: ListFish | None = None
+        self.fishes: ListFish = ListFish([])
 
     def add_fish(self, new_fish: Fish | ListFish):
         self.fishes += new_fish
