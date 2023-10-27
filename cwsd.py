@@ -191,3 +191,15 @@ class CWSD:
             densities.append(pool.get_density())
 
         return densities
+
+    def get_mass_indexes(self):
+        """
+        Метод для получения и отслеживания правильного распределения массовых индексов.
+        :return: Список списков, в которые содержат массовый индекс и среднюю массу рыбы.
+        """
+        mass_indexes: list[list[int | float]] = list()
+
+        for pool in self.pools:
+            mass_indexes.append([pool.mass_index, pool.get_average_mass()])
+
+        return mass_indexes
