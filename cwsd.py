@@ -179,3 +179,15 @@ class CWSD:
             total_biomass += pool.get_biomass()
 
         return total_biomass
+
+    def get_densities(self) -> list[float]:
+        """
+        Метод для получения плотностей посадки в каждом бассейне.
+        :return: Список плотностей посадки в каждом бассейне.
+        """
+        densities: list[float] = list()
+
+        for pool in self.pools:
+            densities.append(pool.get_density())
+
+        return densities
