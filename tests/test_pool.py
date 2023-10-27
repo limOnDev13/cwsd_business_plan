@@ -4,8 +4,7 @@ from pool import Pool
 
 # Создадим бассейн и список рыбы
 pool: Pool = Pool(
-    square=6.0,
-    max_density=40.0
+    square=6.0
 )
 
 list_fish1: ListFish = create_list_fish(number_fish=1000, mass=150.0)
