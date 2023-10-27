@@ -158,10 +158,13 @@ class ListFish:
         elif max:
             return self.list_fish[-1].mass
         elif average:
-            mass: float = 0.0
-            for fish in self.list_fish:
-                mass += fish.mass
-            return mass / len(self.list_fish)
+            if len(self.list_fish) == 0:
+                return 0.0
+            else:
+                mass: float = 0.0
+                for fish in self.list_fish:
+                    mass += fish.mass
+                return mass / len(self.list_fish)
 
     def get_number_of_grown_fish(self, min_mass: float) -> int:
         """
