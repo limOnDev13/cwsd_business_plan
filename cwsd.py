@@ -65,7 +65,7 @@ class CWSD:
         # В каждом бассейне такое количество должно быть не меньше размера пакета.
         for pool in self.pools:
             number_commercial_fish: int = pool.fishes.get_number_of_grown_fish(min_mass=self.commercial_fish_mass)
-            if number_commercial_fish >= self.package:
+            if (number_commercial_fish >= self.package) or (number_commercial_fish == pool.get_number_fish()):
                 sold_fish += pool.remove_fish(number_fish=number_commercial_fish)
 
         # Обновим массовые индексы
@@ -156,7 +156,7 @@ class CWSD:
             if not pool.is_empty():
                 total_biomass += pool.get_biomass()
                 total_square += pool.square
-        if total_biomass / total_square >= self.max_density:
+        if (total_biomass != 0.0) and (total_biomass / total_square >= self.max_density):
             return None
 
         # Если в каком-нибудь бассейне превышена плотность посадки, то распределим рыбу
