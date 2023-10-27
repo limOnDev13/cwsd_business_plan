@@ -168,6 +168,16 @@ class CWSD:
         self._update_mass_indexes()
         return daily_cwsd_result
 
+    def has_empty_pool(self) -> bool:
+        """
+        Метод, который проверяет, есть пустые бассейны в УЗВ
+        :return: True, если есть, иначе - False
+        """
+        for pool in self.pools:
+            if pool.is_empty():
+                return True
+        return False
+
     def get_biomass(self):
         """
         Метод для получения биомассы во всем УЗВ
