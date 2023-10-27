@@ -167,3 +167,15 @@ class CWSD:
         # Обновим массовые индексы и вернем словарь с результатами
         self._update_mass_indexes()
         return daily_cwsd_result
+
+    def get_biomass(self):
+        """
+        Метод для получения биомассы во всем УЗВ
+        :return: Биомассу в УЗВ
+        """
+        total_biomass: float = 0.0
+
+        for pool in self.pools:
+            total_biomass += pool.get_biomass()
+
+        return total_biomass
