@@ -25,30 +25,34 @@ class Optimization:
         :param attempts: Количество проверок.
         :param error_rate: Погрешность вычислений в процентах. Результат будет выводиться, если количество успешных
          проверок попадет в указанную погрешность.
-        :param print_info: Если True, то метод будет писать о процессе выполнения рыботы.
+        :param print_info: Если True, то метод будет писать о процессе выполнения работы.
         :return: Оптимально количество.
         """
         number: int = start_number
         result_number: int = number
 
-        # Проварьируем количество новой рыбы
+        # 1) Проварьируем количество новой рыбы
         while number <= end_number:
+            # 2) Для точности проведем несколько проверок
             successful_attempts: int = 0
             if print_info:
                 print(f'Тестируемое количество: {number}')
-            # Для точности проведем несколько проверок
             for attempt in range(attempts):
+                # 3) Чтобы не ломать текущее УЗВ, полностью скопируем его
                 test_cwsd: CWSD = deepcopy(cwsd)
-
+                # 4) Добавим в скопированное УЗВ тестируемое количество рыбы.
                 test_cwsd.add_fish(create_list_fish(number_fish=number,
                                                     mass=mass))
-                # Будем производить ежедневное выращивание, пока УЗВ не опустеет (придумать более короткую проверку)
+                # 5) Будем производить ежедневное выращивание, пока плотность посадки в УЗВ не опустится ниже
+                # половины от максимальной плотности.
                 success: bool = True
-                while test_cwsd.get_biomass() > 1.0:
+                while test_cwsd.get_total_density() > 0.5 * test_cwsd.get_max_density():
                     daily_result: dict[str | float] | None = test_cwsd.daily_growth()
+                    # 6) Если произошло переполнение, то попытка неудачная
                     if daily_result is None:
                         success = False
                         break
+                # 7) Если попытка оказалась удачной, то увеличим количество удачных попыток для данного зарыбления на 1
                 if success:
                     if print_info:
                         print(f'{attempt} попытка из {attempts} - Успешно!')
@@ -56,7 +60,7 @@ class Optimization:
                 else:
                     if print_info:
                         print(f'{attempt} попытка из {attempts} - Провал!')
-
+            # 8) Если количество провальных ошибок укладывается в погрешность, то данное зарыбление удовлетворительно
             if successful_attempts * 100 / attempts >= error_rate:
                 if print_info:
                     print(f'{successful_attempts} успешных попыток из {attempts}')
