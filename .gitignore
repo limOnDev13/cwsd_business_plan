@@ -1,0 +1,4 @@
+.gitignore
+__pycache__/cwsd.cpython-310.pyc
+__pycache__/default_objects.cpython-310.pyc
+__pycache__/management.cpython-310.pyc
