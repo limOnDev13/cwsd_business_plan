@@ -1,5 +1,6 @@
 from cwsd import CWSD
 from fish import create_list_fish
+from management import BusinessPlan
 
 
 masses_and_numbers: list[list[float | int]] = [[50.0, 1000], [100.0, 750], [150.0, 500], [200.0, 250]]
@@ -19,3 +20,12 @@ def create_cwsd() -> CWSD:
                                              mass=masses_and_numbers[i][0])))
 
     return cwsd
+
+
+def create_business_plan() -> BusinessPlan:
+    return BusinessPlan(
+        prices=[[50.0, 80], [100.0, 160], [200.0, 300], [300.0, 420]],
+        fish_price=1000.0,
+        feed_price=240.0,
+        price_per_kg=False
+    )
