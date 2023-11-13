@@ -512,8 +512,8 @@ class BusinessPlan:
             month_profit = month_income - month_fry_expenses - month_feed_expenses
             # 8) Посчитаем общие расходы и доходы за все время.
             total_income += month_income
-            total_fry_expenses += total_fry_expenses
-            total_feed_expenses += total_feed_expenses
+            total_fry_expenses += month_fry_expenses
+            total_feed_expenses += month_feed_expenses
             total_profit = total_income - total_fry_expenses - total_feed_expenses
             current_budget += month_profit
             if print_info:
