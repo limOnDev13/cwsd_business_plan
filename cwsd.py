@@ -13,6 +13,7 @@ class CWSD:
 
         self.commercial_fish_mass: float = commercial_fish_mass
         self.package: int = package
+        self.square: float = square
 
     def _update_mass_indexes(self):
         """
@@ -225,3 +226,11 @@ class CWSD:
             if not pool.is_empty():
                 return False
         return True
+
+    def get_total_density(self) -> float:
+        """
+        Метод для получения плотности посадки для всего УЗВ.
+        :return: Общую плотность посадки.
+        """
+        biomass: float = self.get_biomass()
+        return biomass / (float(self.number_pools) * self.square)
