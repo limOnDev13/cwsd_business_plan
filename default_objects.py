@@ -7,7 +7,7 @@ masses_and_numbers: list[list[float | int]] = [[50.0, 1000], [100.0, 750], [150.
 
 
 # Создаем cwsd
-def create_cwsd() -> CWSD:
+def create_cwsd(needed_add_fish: bool = True) -> CWSD:
     cwsd: CWSD = CWSD(
         number_pools=len(masses_and_numbers),
         square=6.0,
@@ -15,9 +15,10 @@ def create_cwsd() -> CWSD:
         commercial_fish_mass=400.0,
         package=100
     )
-    for i in range(len(masses_and_numbers)):
-        print(cwsd.add_fish(create_list_fish(number_fish=masses_and_numbers[i][1],
-                                             mass=masses_and_numbers[i][0])))
+    if needed_add_fish:
+        for i in range(len(masses_and_numbers)):
+            print(cwsd.add_fish(create_list_fish(number_fish=masses_and_numbers[i][1],
+                                                 mass=masses_and_numbers[i][0])))
 
     return cwsd
 
