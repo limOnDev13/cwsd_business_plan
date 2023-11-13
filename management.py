@@ -460,7 +460,7 @@ class BusinessPlan:
         total_feed_expenses: float = 0.0
         total_fry_expenses: float = 0.0
         total_income: float = 0.0
-        total_profit: float = 0.0
+        total_profit: float
         current_budget: float = initial_budget
         result_info: list[dict[str, float]] = list()
 
@@ -468,7 +468,9 @@ class BusinessPlan:
         for i in range(len(first_stocking)):
             cwsd.add_fish(new_fish=create_list_fish(number_fish=first_stocking[i],
                                                     mass=self.prices[i][0]))
-            current_budget -= self.calculate_cost_fry(numbers_fish=first_stocking)
+            cost_fry: float = self.calculate_cost_fry(numbers_fish=first_stocking)
+            current_budget -= cost_fry
+            total_fry_expenses += cost_fry
 
         # 2) Начнем производить каждый месяц ежедневное выращивание рыбы
         day: date = date(day=start_date.day, month=start_date.month, year=start_date.year)
@@ -514,6 +516,16 @@ class BusinessPlan:
             total_feed_expenses += total_feed_expenses
             total_profit = total_income - total_fry_expenses - total_feed_expenses
             current_budget += month_profit
+            if print_info:
+                print(f"Месячные расходы на корм: {month_feed_expenses}\n"
+                      f"Месячные расходы на мальков: {month_fry_expenses}\n"
+                      f"Месячный доход: {month_income}\n"
+                      f"Месячная прибыль: {month_profit}\n"
+                      f"Расходы на корм за все время: {total_feed_expenses}\n"
+                      f"Расходы на мальков за все время: {total_fry_expenses}\n"
+                      f"Доход за все время: {total_income}\n"
+                      f"Прибыль за все время: {total_profit}\n"
+                      f"Текущий бюджет: {current_budget}\n")
             # 9) Сохраним полученную информацию в result_info
             result_info.append({'month_fry_expenses': month_fry_expenses,
                                 'month_feed_expenses': month_feed_expenses,
