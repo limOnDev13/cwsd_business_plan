@@ -12,7 +12,7 @@ number_tests: int = 10
 number_pools: int = 4
 step: int = 50
 
-best_vectors: list[list[int]] = bp.get_best_vectors(number_vectors_from_one_file=1)
+best_vectors: list[list[int]] = bp.get_best_vectors(number_vectors_from_one_file=5)
 print(best_vectors)
 min_limits: list[int] = [9999 for _ in range(number_pools)]
 max_limits: list[int] = [0 for _ in range(number_pools)]
@@ -24,10 +24,11 @@ for vector in best_vectors:
             max_limits[i] = vector[i]
 print(min_limits)
 print(max_limits)
-# min_limits: [19, 12, 2, 5]
-# max_limits: [36, 23, 28, 23]
-# delta:      [17, 11, 26, 18]
-
+# min_limits: [25, 14, 15, 5]
+# max_limits: [35, 21, 28, 11]
+# best: [1750, 700, 750, 250, 452011]
+# delta:      [10, 7, 13, 6]
+"""
 for _ in range(number_tests):
     result_info: list[list[int]] = bp.calculate_profitable_first_stocking(
         number_pools=number_pools,
@@ -35,12 +36,13 @@ for _ in range(number_tests):
         max_density=40.0,
         commercial_fish_mass=400.0,
         package=100,
-        min_limits=[19, 12, 2, 5],
-        max_limits=[36, 23, 28, 23],
+        min_limits=[25, 14, 15, 5],
+        max_limits=[35, 21, 28, 11],
         step=step,
         attempts=5,
         print_info=True,
-        number_vectors=1000
+        number_vectors=200
     )
     result_info.sort(key=lambda x: x[-1], reverse=True)
     bp.save_best_random_vectors(result_info)
+"""

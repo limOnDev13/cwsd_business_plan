@@ -3,6 +3,8 @@ from copy import deepcopy
 from fish import create_list_fish
 from random import randint
 import os.path
+from datetime import date, timedelta
+from service import define_next_date
 
 
 class Optimization:
@@ -121,19 +123,32 @@ class BusinessPlan:
         daily_expenses: float = daily_result['required_feed'] * self.feed_price / 1000
         return daily_expenses
 
-    def calculate_cost_fry(self, numbers_fish: list[int]) -> float:
+    def calculate_cost_fry(self, numbers_fish: list[int] | None = None,
+                           mass: float | None = None, number: int | None = None) -> float:
         """
-        Метод для расчета затрат на малька.
+        Метод для расчета затрат на малька. Либо numbers_fish равен None, либо mass и number равны None.
         :param numbers_fish: Список количеств рыб. Их порядок соответствует порядку расположения масс в поле
-         self.prices.
+         self.prices. Если None, то метод будет определять по введенной массе ее цену.
+        :param mass: Если numbers_fish является None. Средняя масса мальков в пустой бассейн.
+        :param number: Если numbers_fish является None. Количество новых мальков в пустой бассейн
         :return: Затраты на малька.
         """
         result_expenses: float = 0.0
-        for i in range(len(self.prices)):
-            if self.price_per_kg:
-                result_expenses += float(numbers_fish[i]) * self.prices[i][0] * self.prices[i][1] / 1000
-            else:
-                result_expenses += float(numbers_fish[i]) * self.prices[i][1]
+        if numbers_fish is not None:
+            for i in range(len(self.prices)):
+                if self.price_per_kg:
+                    result_expenses += float(numbers_fish[i]) * self.prices[i][0] * self.prices[i][1] / 1000
+                else:
+                    result_expenses += float(numbers_fish[i]) * self.prices[i][1]
+        else:
+            for i in range(len(self.prices)):
+                price: int = 0
+                if self.prices[i][0] == mass:
+                    price = self.prices[i][1]
+                if self.price_per_kg:
+                    result_expenses = float(number) * mass * price / 1000
+                else:
+                    result_expenses = float(number) * number
         return result_expenses
 
     def daily_growth(self, cwsd: CWSD, print_info: bool = False) -> dict[str, float] | None:
@@ -419,3 +434,97 @@ class BusinessPlan:
             file_path: str = f'E:/vovasProgram/cwsd_business_plan/set_of_vectors/{file_number}.txt'
 
         return result_list_vectors
+
+    def get_business_plan(self, cwsd: CWSD, first_stocking: list[int], months: int, start_date: date, delta_mass: float,
+                          step_number: int, end_number: int, initial_budget: float, print_info: bool = False
+                          ) -> list[dict[str, float]] | None:
+        """
+        Финальный метод, который сводит кредит с дебетом.
+        :param cwsd: Созданное УЗВ без рыбы.
+        :param first_stocking: Первоначальное зарыбление. Расположение количеств соответствует порядку масс в поле
+         self.prices.
+        :param months: На сколько месяцев производить расчеты.
+        :param start_date: Дата начала отчета.
+        :param delta_mass: Половина промежутка, в котором не должны находиться средние массы в бассейных.
+         Подробнее в документации к методу Optimization.calculate_new_fish_mass.
+        :param step_number: Шаг вариации для определения количества новой рыбы в пустой бассейн.
+        Подробнее в документации к методу opt.calculate_optimal_number_new_fish_in_empty_pool.
+        :param end_number: Предел вариации для определения количества новой рыбы в пустой бассейн.
+        Подробнее в документации к методу opt.calculate_optimal_number_new_fish_in_empty_pool.
+        :param initial_budget: Стартовый бюджет.
+        :param print_info: Если True, то метод будет выводить информацию в терминал за каждый месяц.
+        :return: Список словарей с необходимой информацией на каждый месяц.
+        """
+        opt: Optimization = Optimization()
+        masses: list[float] = [self.prices[i][0] for i in range(len(self.prices))]
+        total_feed_expenses: float = 0.0
+        total_fry_expenses: float = 0.0
+        total_income: float = 0.0
+        total_profit: float = 0.0
+        current_budget: float = initial_budget
+        result_info: list[dict[str, float]] = list()
+
+        # 1) Сделаем первоначальное зарыбление и вычтем стоимость мальков из начального бюджета
+        for i in range(len(first_stocking)):
+            cwsd.add_fish(new_fish=create_list_fish(number_fish=first_stocking[i],
+                                                    mass=self.prices[i][0]))
+            current_budget -= self.calculate_cost_fry(numbers_fish=first_stocking)
+
+        # 2) Начнем производить каждый месяц ежедневное выращивание рыбы
+        day: date = date(day=start_date.day, month=start_date.month, year=start_date.year)
+        month: int = 0
+        while month < months:
+            if print_info:
+                print(f'{month} месяц:')
+            month_feed_expenses: float = 0.0
+            month_fry_expenses: float = 0.0
+            month_income: float = 0.0
+            month_profit: float
+
+            # 3) Начнем перебирать дни, пока не дойдем до даты дня, который наступит через месяц.
+            next_date: date = define_next_date(day)
+            while day < next_date:
+                # 4) Производим ежедневное выращивание
+                daily_result: dict[str, float] | None = cwsd.daily_growth()
+                if daily_result is None:
+                    if print_info:
+                        print('Произошло переполнение!!!!!!!!!!!!!!!!!!!!!!!!!!')
+                        return None
+                # 5.1) Посчитаем доходы и расходы на корм.
+                month_feed_expenses += self.calculate_daily_expenses(daily_result)
+                month_income += self.calculate_daily_income(daily_result)
+                # 5.2) Если у нас появился пустой бассейн, добавим в него рыбу, посчитаем расходы на малька.
+                if cwsd.has_empty_pool():
+                    mass_new_fish: float = opt.calculate_new_fish_mass(cwsd, masses, delta_mass)
+                    number_new_fish: int = opt.calculate_optimal_number_new_fish_in_empty_pool(
+                        cwsd=cwsd, mass=mass_new_fish, start_number=50, step_number=step_number, end_number=end_number,
+                    )
+                    cwsd.add_fish(new_fish=create_list_fish(number_new_fish, mass_new_fish))
+                    if print_info:
+                        print(f'{day} добавили {number_new_fish} мальков со средней массой {mass_new_fish} г.')
+                    month_fry_expenses += self.calculate_cost_fry(numbers_fish=None,
+                                                                  mass=mass_new_fish, number=number_new_fish)
+                # 6) Увеличим дату на один день.
+                day += timedelta(days=1)
+            # 7) Посчитаем месячную прибыль.
+            month_profit = month_income - month_fry_expenses - month_feed_expenses
+            # 8) Посчитаем общие расходы и доходы за все время.
+            total_income += month_income
+            total_fry_expenses += total_fry_expenses
+            total_feed_expenses += total_feed_expenses
+            total_profit = total_income - total_fry_expenses - total_feed_expenses
+            current_budget += month_profit
+            # 9) Сохраним полученную информацию в result_info
+            result_info.append({'month_fry_expenses': month_fry_expenses,
+                                'month_feed_expenses': month_feed_expenses,
+                                'month_income': month_income,
+                                'month_profit': month_profit,
+                                'total_fry_expenses': total_fry_expenses,
+                                'total_feed_expenses': total_feed_expenses,
+                                'total_income': total_income,
+                                'total_profit': total_profit,
+                                'current_budget': current_budget})
+            # 10) Увеличим количество прошедших месяцев на один.
+            month += 1
+        # 11) Вернем полученную информацию в виде списка словарей.
+        return result_info
