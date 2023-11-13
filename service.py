@@ -3,6 +3,11 @@ from calendar import monthrange
 
 
 def define_next_date(current_date: date) -> date:
+    """
+    Метод, определяющий дату, которая будет через месяц.
+    :param current_date: Текущая дата.
+    :return: Дата дня, который наступит через месяц.
+    """
     next_day: int = current_date.day
     next_month: int = current_date.month + 1
     next_year: int = current_date.year
