@@ -81,17 +81,21 @@ class Optimization:
          определения необходимой массы новой рыбы.
         :return: Массу из списка масс.
         """
+        # 1) Составим список средних масс в бассейнах
         average_masses: list[float] = list()
         for pool in cwsd.pools:
             average_masses.append(pool.get_average_mass())
+        # 2) Отсортируем списки масс от большего к меньшему
         average_masses.sort(reverse=True)
         masses.sort(reverse=True)
 
-        for i in range(len(average_masses) - 1):
-            for mass in masses:
-                if (average_masses[i] <= mass + delta_mass) and (mass - delta_mass < average_masses[i + 1]):
+        # 3) Проверим каждую массу из masses с каждой средней массой из average_masses.
+        # В промежутке (mass - delta_mass, mass + delta_mass) не должно быть средних масс.
+        for mass in masses:
+            for i in range(len(average_masses)):
+                if average_masses[i] > mass + delta_mass and mass - delta_mass > average_masses[i + 1]:
                     return mass
-
+        # 4) Если подходящую массу не получилось найти - вернем самую большую
         return masses[0]
 
 
