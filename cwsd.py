@@ -1,5 +1,6 @@
-from fish import Fish, ListFish
+from fish import Fish, ListFish, create_list_fish
 from pool import Pool
+from copy import deepcopy
 
 
 class CWSD:
@@ -137,6 +138,7 @@ class CWSD:
         Метод для разового однодневного выращивания рыбы во всем УЗВ.
         :return: Словарь с информацией о приросте биомассы, затраченном корме и массе проданной рыбы. Если плотность
          посадки во всем УЗВ достигла предела, то это означает, что зарыбление было ошибочным, и вернем None.
+          Словарь имеет вид {'mass_increase': ..., 'required_feed': ..., 'sold_biomass': ...}
         """
         daily_cwsd_result: dict[str, float] = {'mass_increase': 0.0, 'required_feed': 0.0, 'sold_biomass': 0.0}
 
@@ -213,3 +215,13 @@ class CWSD:
             mass_indexes.append([pool.mass_index, pool.get_average_mass()])
 
         return mass_indexes
+
+    def is_empty(self) -> bool:
+        """
+        Метод, который проверяет, не опустело ли УЗВ
+        :return: True, если УЗВ стало пустым. Иначе - False.
+        """
+        for pool in self.pools:
+            if not pool.is_empty():
+                return False
+        return True
