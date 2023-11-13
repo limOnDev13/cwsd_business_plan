@@ -124,8 +124,8 @@ class BusinessPlan:
     def calculate_cost_fry(self, numbers_fish: list[int]) -> float:
         """
         Метод для расчета затрат на малька.
-        :param numbers_fish: Список количеств рыб. Их порядок соответствует порядку расположения масс в поле self.prices.
-        :param price_per_kg: Если True, то цена указана за килограмм. Иначе - за штуку.
+        :param numbers_fish: Список количеств рыб. Их порядок соответствует порядку расположения масс в поле
+         self.prices.
         :return: Затраты на малька.
         """
         result_expenses: float = 0.0
@@ -168,7 +168,6 @@ class BusinessPlan:
         :param delta_mass: Минимальная длина промежутка между средней массой и массой новой рыбы.
         :param step_number: Шаг для перебора значений количества новой рыбы.
         :param end_number: Верхняя граница значений количества новой рыбы.
-        :param price_per_kg: True, если цена за кг. False, если цена за шт.
         :param print_info: Если True, то будет писать о переполнении.
         :return: Словарь с необходимой информацией. Словарь имеет вид {'sold_biomass': ..., 'spent_feed_mass': ...,
         'income': ..., 'expenses': ..., 'profit': ..., 'budget': ...}
@@ -296,7 +295,6 @@ class BusinessPlan:
         :param max_density: Максимальная плотность посадки.
         :param commercial_fish_mass: Масса товарной рыбы.
         :param package: Минимальный размер пакета.
-        :param vector_min_value: Минимальное значение координаты вектора, деленное на step.
         :param max_limits: Границы количеств для каждой масс. Если передан список, то границы устанавливаются для каждой
          массы отдельно. Если передано int, то для всех устанавливается одинаковая граница.
         :param min_limits: Минимальные границы.
@@ -345,97 +343,6 @@ class BusinessPlan:
                         days=0,
                         initial_capital=0,
                         cost_fry=cost_fry
-                    )
-                    # 6.1) Если произошло переполнение, то прекращаем расчет и тестируем новый вектор
-                    if result_info is None:
-                        new_vector_is_needed = True
-                        break
-                    # 6.2) Если выращивание прошло успешно, то зафиксируем минимальную прибыль из всех попыток
-                    # для данного вектора
-                    if result_info['profit'] < min_profit_one_test:
-                        min_profit_one_test = result_info['profit']
-                        new_vector_is_needed = False
-                # 7) Если ни в одной попытке не было переполнения, то сохраняем результат
-                if not new_vector_is_needed:
-                    if min_profit_one_test > total_profit:
-                        total_profit = min_profit_one_test
-                        result_stocking = list(stocking)
-                    if print_info:
-                        print(f'Прибыль в худшем варианте: {min_profit_one_test}.\n'
-                              f'На данный момент лучший вектор {result_stocking} с прибылью {total_profit}')
-                    stocking.append(int(min_profit_one_test))
-                    tested_vectors.append(stocking)
-
-        return tested_vectors
-
-    def calculate_profitable_first_stocking_with_long_term_cultivation(
-            self, number_pools: int, square: float, max_density: float, commercial_fish_mass: float, package: int,
-            min_limits: list[int] | int, max_limits: list[int] | int, number_vectors: int, step: int, attempts: int,
-            days: int, print_info: bool = False
-    ) -> list[list[int]]:
-        """
-        Метод для решения оптимизации первого зарыбления. Пока метод создает рандомные вектора
-         (координаты - количества зарыбляемой рыбы) и рассчитывает прибыль данного зарыбления. Для каждого вектора будет
-          проводиться несколько попыток, так как каждый раз будет зарыбляться рыба со случайным коэффициентом
-           массонакопления. Из этих попыток будет браться наихудший сценарий (с наименьшей прибылью). Из всех векторов
-            выбираться будет с наибольшей прибылью.
-        :param number_pools: Количество бассейнов. Чем больше бассейнов, тем больше необходимо векторов, тем намного
-         дольше будет производиться расчет.
-        :param square: Площадь бассейна.
-        :param max_density: Максимальная плотность посадки.
-        :param commercial_fish_mass: Масса товарной рыбы.
-        :param package: Минимальный размер пакета.
-        :param max_limits: Границы количеств для каждой масс. Если передан список, то границы устанавливаются для каждой
-         массы отдельно. Если передано int, то для всех устанавливается одинаковая граница.
-        :param min_limits: Минимальные границы.
-        :param number_vectors: Количество успешных векторов. Если передано число, большее чем 50% от количества
-         возможных векторов, то будет вестись расчет для 20%.
-        :param step: Шаг изменения координаты вектора.
-        :param attempts: Количество попыток (тестов) для каждого вектора. Не стоит брать слишком много.
-        :param days: Количество дней выращивания.
-        :param print_info: Если True, то будет писаться подробная информация о процессе работы.
-        :return: Список списков масс рыб и их количества.
-        """
-        # Результатом работы метода будет список количеств, они расположены в соответствии.
-        stockings: set[tuple[int]] = set()
-        result_stocking: list[int] = list()
-        tested_vectors: list[list[int]] = list()
-        total_profit: float = 0.0
-
-        for vector_number in range(number_vectors):
-            if print_info:
-                print(f'\nПроисходит тестирование № {vector_number} из {number_vectors}\n')
-            new_vector_is_needed: bool = True
-            while new_vector_is_needed:
-                # 1) Создадим случайный вектор
-                stocking: list[int] = self._random_values(min_limits, max_limits, step)
-                # 2) Если созданный вектор уже тестировался, то пропустим итерацию
-                if tuple(stocking) in stockings:
-                    continue
-                else:
-                    stockings.add(tuple(stocking))
-                if print_info:
-                    print(f'Тестируем вектор {stocking}')
-                # 3) Проведем несколько попыток для точности
-                min_profit_one_test: float = 999999999.9
-                for attempt in range(attempts):
-                    # 4) Создадим тестовое УЗВ и добавим в него рыбу в количествах в соответствии с созданным вектором
-                    if print_info:
-                        print(f'Происходит попытка {attempt} из {attempts}')
-                    cwsd: CWSD = CWSD(number_pools, square, max_density, commercial_fish_mass, package)
-                    for i in range(len(self.prices)):
-                        cwsd.add_fish(create_list_fish(number_fish=stocking[i],
-                                                       mass=self.prices[i][0]))
-                    cost_fry: float = self.calculate_cost_fry(numbers_fish=stocking)
-                    # 5) Получим результат выращивания. Будем оценивать по достижению продажи полного объемы рыбы
-                    result_info: dict[str, float | dict[int, float]] | None = self.calculate_profit(
-                        cwsd=cwsd,
-                        days=days,
-                        initial_capital=0,
-                        cost_fry=cost_fry,
-                        delta_mass=20.0,
-                        step_number=50,
-                        end_number=10000
                     )
                     # 6.1) Если произошло переполнение, то прекращаем расчет и тестируем новый вектор
                     if result_info is None:
