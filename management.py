@@ -150,13 +150,13 @@ class BusinessPlan:
                     result_expenses += float(numbers_fish[i]) * self.prices[i][1]
         else:
             for i in range(len(self.prices)):
-                price: int = 0
                 if self.prices[i][0] == mass:
-                    price = self.prices[i][1]
-                if self.price_per_kg:
-                    result_expenses = float(number) * mass * price / 1000
-                else:
-                    result_expenses = float(number) * number
+                    price: int = self.prices[i][1]
+                    if self.price_per_kg:
+                        result_expenses = float(number) * mass * price / 1000
+                    else:
+                        result_expenses = float(number) * price
+                    break
         return result_expenses
 
     def daily_growth(self, cwsd: CWSD, print_info: bool = False) -> dict[str, float] | None:
@@ -476,9 +476,11 @@ class BusinessPlan:
         for i in range(len(first_stocking)):
             cwsd.add_fish(new_fish=create_list_fish(number_fish=first_stocking[i],
                                                     mass=self.prices[i][0]))
-            cost_fry: float = self.calculate_cost_fry(numbers_fish=first_stocking)
-            current_budget -= cost_fry
-            total_fry_expenses += cost_fry
+        cost_fry: float = self.calculate_cost_fry(numbers_fish=first_stocking)
+        current_budget -= cost_fry
+        total_fry_expenses += cost_fry
+        if print_info:
+            print(f'Расходы на первоначальное зарыбление: {cost_fry}')
 
         # 2) Начнем производить каждый месяц ежедневное выращивание рыбы
         day: date = date(day=start_date.day, month=start_date.month, year=start_date.year)
@@ -529,6 +531,7 @@ class BusinessPlan:
                       f"Месячные расходы на мальков: {month_fry_expenses}\n"
                       f"Месячный доход: {month_income}\n"
                       f"Месячная прибыль: {month_profit}\n"
+                      f"----------------------------------------------------\n"
                       f"Расходы на корм за все время: {total_feed_expenses}\n"
                       f"Расходы на мальков за все время: {total_fry_expenses}\n"
                       f"Доход за все время: {total_income}\n"
